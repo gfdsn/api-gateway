@@ -1,22 +1,40 @@
 import fs from "fs";
-import { SERVICES } from "../types/endpoints.js";
-import { LOG_FILES, LOG_LEVELS } from "./log-types.js";
+import { Log } from "./log.types.js";
 
-interface writeLogParams {
-    file: LOG_FILES,
-    level: LOG_LEVELS,
-    content: string,
-    service: SERVICES
-}
-
-// TODO: check log types
 // TODO: limit the request.txt length
+// TODO: search for some log
+// TODO: improve the log method's params
 
-export const writeLog = ({
-    file, content, level, service
-}: writeLogParams): void => {
-    const file_path: string = "logs/"+file+".txt";
-    const log_message =  "["+new Date().toISOString()+"]" + "[service: " + service + "] " + level + ": " + content + "\n"
+export class Logger {
+    
+    public static log = async ({
+        request,
+        client,
+        file, 
+        message, 
+        service, 
+        level
+    }: Log): Promise<void> => {
 
-    fs.appendFile(file_path, log_message, {encoding: 'latin1'}, (err) => console.log(err))
+        const file_path: string = await this.verifyFile(file);
+
+        const timestamp_options: Intl.DateTimeFormatOptions = {day: 'numeric', year: "numeric", month: 'long', hour: "2-digit", minute: "2-digit", second:"2-digit"}
+        const timestamp: string = new Date().toLocaleString("en-US", timestamp_options)
+
+        const log_message: string = `${client} - ${request?.user_id} [${service} service][${timestamp}] ${level} ${request?.target} ${request?.status} ${message} ${request?.agent}\n`;
+    
+        fs.appendFile(
+            file_path, log_message, {encoding: 'latin1'}, 
+            (err) => {if (err) console.log(err)}
+        )
+    }
+
+    private static verifyFile = (file: string): string => {
+        const file_path: string = "logs/"+file+".log"
+        if(!fs.existsSync(file_path))
+            fs.openSync(file_path, "w")
+
+        return file_path;
+    }
+
 }
