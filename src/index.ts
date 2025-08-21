@@ -1,39 +1,31 @@
 import http, { IncomingMessage, Server, ServerResponse } from 'http';
 import ip from 'ip';
 import { Logger } from './logs/log.js';
-import { LogFiles, LogLevels, LogRequest } from './logs/log.types.js';
+import { LogRequest } from './logs/log.types.js';
 import { Services } from './types/endpoints.js';
 
 const PORT: number = Number(process.env.SERVER_PORT) ?? 3000
 
-const server: Server = http.createServer((req: IncomingMessage ,res: ServerResponse) => {
+const server: Server = http.createServer((req: IncomingMessage, res: ServerResponse) => {
 
     // TODO: check for 404
-
     const {method, url, headers} = req
+
+    // TODO: may the service be undefined? 
     const service: string|undefined = url?.slice(1, url.indexOf("/", 2))
 
-    const log_request: LogRequest = {
-        user_id: "abcdef",
-        agent: headers["user-agent"],
-        status: 200,
-        target: "'" + method + " " + url + "'"
+    // TODO: default some Request to set here as the type
+    const requestData: LogRequest = { 
+        user_id: "abcdef", 
+        agent: headers["user-agent"] ?? "", 
+        status: 200, target: "'" + method + " " + url + "'", 
+        client: ip.address() 
     }
-
-    const client: string|undefined = ip.address()
 
     if (method === 'GET' && service === Services.USERS_SERVICE){
 
         // TODO: handle errors and log them
-
-        Logger.log({
-            request: log_request,
-            client: client,
-            file: LogFiles.REQUESTS,
-            message: 'Received some request to users service', 
-            service: Services.USERS_SERVICE,
-            level: LogLevels.INFO
-        });
+        Logger.log(requestData, 'Received some request to users service', Services.USERS_SERVICE);
 
         return res.end(JSON.stringify({
             service: 'Users service'
