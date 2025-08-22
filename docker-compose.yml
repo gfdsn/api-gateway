@@ -1,0 +1,16 @@
+name: api-gateway
+services:
+    api-gateway:
+        build: .
+        container_name: api-gateway
+        volumes:
+            - ./src:/app/src  
+            - node_modules:/app/node_modules
+        ports:
+            - 3000:3000
+        environment:
+            - SERVER_PORT=3000
+            - CHOKIDAR_USEPOLLING=true
+
+volumes:
+    node_modules:

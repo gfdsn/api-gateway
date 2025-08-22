@@ -72,6 +72,7 @@ export class Logger {
     private static verifyFile = (file: string): string => {
         const file_path: string = "logs/"+file+".log"
         if(!fs.existsSync(file_path))
+            if (!fs.existsSync("logs/")) fs.mkdirSync("logs/")
             fs.openSync(file_path, "w")
 
         return file_path;

@@ -9,11 +9,13 @@ import { RequestHandler } from './request.js';
 const PORT: number = Number(process.env.SERVER_PORT) ?? 3000
 
 const server: Server = http.createServer((req: IncomingMessage, res: ServerResponse) => {
-
-    // TODO: check for 404
-    const {method, url, headers} = req
-    console.log(req)
     
+    // TODO: check for 404
+    // TODO: get the request body and send it if it is a POST request
+
+    const {method, url, headers} = req
+     
+    // verify that the url is in the allowed endpoints
     if (!RequestHandler.verifyUrl(url)) {
         res.writeHead(204)
         res.end()
@@ -22,10 +24,8 @@ const server: Server = http.createServer((req: IncomingMessage, res: ServerRespo
 
     // parse the incoming request into a normalized Request
     const request: Request = RequestHandler.parse(req);
-    console.log(request)
 
-    // TODO: may the service be undefined? 
-    const service: string = request.target.slice(1, request.target.indexOf("/", 2))
+    const service: string = request.service
 
     // TODO: default some Request to set here as the type
     const requestData: LogRequest = { 
@@ -67,10 +67,10 @@ const server: Server = http.createServer((req: IncomingMessage, res: ServerRespo
     res.writeHead(200, {'Content-Type': 'application/json'})
 
     res.end(JSON.stringify({
-        data: 'Bomboklat'
+        data: 'Bomboklat abc'
     }))
 });
 
-server.listen(PORT, () => {
-    console.log('Server listening on PORT: http://localhost:' + PORT)
-})
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server listening on PORT: http://0.0.0.0:${PORT}`);
+});
