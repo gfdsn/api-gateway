@@ -9,24 +9,30 @@ import { LogLevels, LogRequest } from "./log.types.js";
 export class Logger {
     
     public static log = async (request: LogRequest, message: string, service: Services): Promise<void> => {
-
         const file_path: string = await this.verifyFile("logs");
 
         const log_message: string = this.buildLogMessage(request, service, LogLevels.INFO, message);
     
-        fs.appendFile(
-            file_path, log_message, {encoding: 'latin1'}, 
+        fs.appendFile(file_path, log_message, {encoding: 'latin1'}, 
             (err) => {if (err) console.log(err)}
         )
     }
 
     public static error = async (): Promise<void> => {
-        const file_path: string = await this.verifyFile("errors")
+        const file_path: string = await this.verifyFile("errors");
+
+        // const log_message: string = this.buildLogMessage();
+
+        fs.appendFile(file_path, "error", {encoding: 'latin1'},
+            (err) => {if (err) console.log(err)}
+        )
     }
 
     public static debug = async (): Promise<void> => {
         const file_path: string = await this.verifyFile("debug")
     }
+
+    public static parse = () => {}
 
     /**
      * Builds and returns the log message string.

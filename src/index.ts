@@ -3,6 +3,8 @@ import ip from 'ip';
 import { Logger } from './logs/log.js';
 import { LogRequest } from './logs/log.types.js';
 import { Services } from './types/endpoints.js';
+import { Request } from './types/request.js';
+import { RequestHandler } from './request.js';
 
 const PORT: number = Number(process.env.SERVER_PORT) ?? 3000
 
@@ -10,9 +12,20 @@ const server: Server = http.createServer((req: IncomingMessage, res: ServerRespo
 
     // TODO: check for 404
     const {method, url, headers} = req
+    console.log(req)
+    
+    if (!RequestHandler.verifyUrl(url)) {
+        res.writeHead(204)
+        res.end()
+        return;
+    }
+
+    // parse the incoming request into a normalized Request
+    const request: Request = RequestHandler.parse(req);
+    console.log(request)
 
     // TODO: may the service be undefined? 
-    const service: string|undefined = url?.slice(1, url.indexOf("/", 2))
+    const service: string = request.target.slice(1, request.target.indexOf("/", 2))
 
     // TODO: default some Request to set here as the type
     const requestData: LogRequest = { 
@@ -22,6 +35,7 @@ const server: Server = http.createServer((req: IncomingMessage, res: ServerRespo
         client: ip.address() 
     }
 
+    // TODO: all of this is removable!
     if (method === 'GET' && service === Services.USERS_SERVICE){
 
         // TODO: handle errors and log them
