@@ -17,7 +17,7 @@ const server: Server = http.createServer((req: IncomingMessage, res: ServerRespo
      
     // verify that the url is in the allowed endpoints
     if (!RequestHandler.verifyUrl(url)) {
-        res.writeHead(204)
+        res.writeHead(404)
         res.end()
         return;
     }

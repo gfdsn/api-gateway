@@ -52,7 +52,8 @@ export class RequestHandler {
             const url_whitelist: ServicesValues[] = Object.values<ServicesValues>(Services)
 
             const service = this.getServiceFromUrl(url)
-    
+            console.log(service)
+
             return url_whitelist.includes(service as ServicesValues);
         }
         return false;
@@ -66,7 +67,8 @@ export class RequestHandler {
      * @returns string 
      */
     private static getServiceFromUrl = (url: string): string => {
-        return url.slice(1, url.indexOf("/", 2))
+        const url_params: string[] = url.split("/").filter(val => val != "")
+        return url_params[0]
     }
 
 }
