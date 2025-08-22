@@ -10,8 +10,8 @@ const PORT: number = Number(process.env.SERVER_PORT) ?? 3000
 
 const server: Server = http.createServer((req: IncomingMessage, res: ServerResponse) => {
     
-    // TODO: check for 404
     // TODO: get the request body and send it if it is a POST request
+    // TODO: check for possible errors and log them
 
     const {method, url, headers} = req
      

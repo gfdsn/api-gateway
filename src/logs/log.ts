@@ -1,6 +1,7 @@
 import fs from "fs";
 import { Services } from "../types/endpoints.js";
 import { LogLevels, LogRequest } from "./log.types.js";
+import path from "path";
 
 // TODO: limit the request.log length
 // TODO: search for some log
@@ -10,20 +11,19 @@ export class Logger {
     
     public static log = async (request: LogRequest, message: string, service: Services): Promise<void> => {
         const file_path: string = await this.verifyFile("logs");
+        console.log(file_path)
 
         const log_message: string = this.buildLogMessage(request, service, LogLevels.INFO, message);
     
-        fs.appendFile(file_path, log_message, {encoding: 'latin1'}, 
-            (err) => {if (err) console.log(err)}
-        )
+        fs.appendFileSync(file_path, log_message, { encoding: 'utf8' });
     }
 
-    public static error = async (): Promise<void> => {
+    public static error = async (request: LogRequest, message: string, service: Services): Promise<void> => {
         const file_path: string = await this.verifyFile("errors");
 
-        // const log_message: string = this.buildLogMessage();
+        const log_message: string = this.buildLogMessage(request, service, LogLevels.ERROR, message);
 
-        fs.appendFile(file_path, "error", {encoding: 'latin1'},
+        fs.appendFile(file_path, log_message, {encoding: 'latin1'},
             (err) => {if (err) console.log(err)}
         )
     }
@@ -70,11 +70,10 @@ export class Logger {
      * @returns string
      */
     private static verifyFile = (file: string): string => {
-        const file_path: string = "logs/"+file+".log"
-        if(!fs.existsSync(file_path))
-            if (!fs.existsSync("logs/")) fs.mkdirSync("logs/")
-            fs.openSync(file_path, "w")
+        const folder_path: string = "/app/logs/"
+        if (!fs.existsSync(folder_path)) 
+            fs.mkdirSync(folder_path, {recursive: true})
 
-        return file_path;
+        return path.join(folder_path, file+".log");
     }
 }

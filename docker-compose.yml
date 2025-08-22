@@ -6,6 +6,7 @@ services:
         volumes:
             - ./src:/app/src  
             - node_modules:/app/node_modules
+            - ./logs:/app/logs
         ports:
             - 3000:3000
         environment:
