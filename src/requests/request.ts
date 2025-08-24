@@ -36,7 +36,7 @@ export class RequestHandler extends RequestValidator {
                 timestamp: new Date()
             },
             method: method||"",
-            target: url
+            target: new RequestUrl(url)
         };
     }
 
@@ -50,7 +50,7 @@ export class RequestHandler extends RequestValidator {
     public static validate = (headers: IncomingHttpHeaders, url: string): boolean => {
     
         // using RequestValidator for more readabilty
-        return RequestValidator.validateHeadersContent(headers, url);
+        return false;
     }
 
     /**
@@ -88,3 +88,43 @@ export class RequestHandler extends RequestValidator {
     }
 
 }
+
+export class RequestUrl {
+    // http:localhost:3000/service/operation/...
+
+    private baseUrl: string;
+    private service: string;
+    private operation: string;
+    
+    constructor(url: string) {
+        this.baseUrl = url;
+        this.service = url.split("/").filter(val => val != "")[0];
+        this.operation = url.split("/").filter(val => val != "")[1] ?? "";
+    }
+
+    /**
+     * 
+     * @returns the base url from the request.
+     */
+    public getBaseUrl(): string {return this.baseUrl}
+
+    /**
+     * 
+     * @returns the retrieved service from the url.
+     */
+    public getService(): string {return this.service}
+
+    /**
+     * 
+     * @returns the retrived operation from the url.
+     */
+    public getOperation(): string {return this.operation}
+
+    /**
+     * 
+     * @returns true if the operation is public, false otherwise
+     */
+    public isPublic(): boolean {return this.operation === 'public'}
+
+}
+
