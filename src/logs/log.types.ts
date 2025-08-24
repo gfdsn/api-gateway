@@ -10,9 +10,6 @@ export enum LogLevels {
 }
 
 export type LogRequest = {
-    user_id: string,
     agent: string| "",
-    status: number,
     target: string,
-    client: string
 }

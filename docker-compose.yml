@@ -11,6 +11,7 @@ services:
             - 3000:3000
         environment:
             - SERVER_PORT=3000
+            - DEBUG=true
             - CHOKIDAR_USEPOLLING=true
 
 volumes:

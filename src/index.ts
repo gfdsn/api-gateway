@@ -1,10 +1,11 @@
 import http, { IncomingMessage, Server, ServerResponse } from 'http';
-import ip from 'ip';
 import { Logger } from './logs/log.js';
 import { LogRequest } from './logs/log.types.js';
-import { Services } from './types/endpoints.js';
-import { Request } from './types/request.js';
-import { RequestHandler } from './request.js';
+import { Services } from './endpoints.js';
+import { Request } from './requests/request.types.js';
+import { RequestHandler } from './requests/request.js';
+import { InvalidRequestException } from './requests/exceptions/request-exceptions.js';
+import { RequestValidator } from './requests/request-validator.js';
 
 const PORT: number = Number(process.env.SERVER_PORT) ?? 3000
 
@@ -12,6 +13,8 @@ const server: Server = http.createServer((req: IncomingMessage, res: ServerRespo
     
     // TODO: get the request body and send it if it is a POST request
     // TODO: check for possible errors and log them
+    // TODO: implement a DEBUG mode
+    // TODO: Rate-Limiter
 
     const {method, url, headers} = req
      
@@ -22,50 +25,30 @@ const server: Server = http.createServer((req: IncomingMessage, res: ServerRespo
         return;
     }
 
+    // @ts-ignore (url verified above)
+    RequestValidator.validateHeadersContent(headers, url);
+
     // parse the incoming request into a normalized Request
-    const request: Request = RequestHandler.parse(req);
+    try {
+        const request: Request = RequestHandler.parse(req);
+        const service: string = request.service
 
-    const service: string = request.service
+        if (process.env.DEBUG) console.log(method + " " + request.target)
 
-    // TODO: default some Request to set here as the type
-    const requestData: LogRequest = { 
-        user_id: "abcdef", 
-        agent: headers["user-agent"] ?? "", 
-        status: 200, target: "'" + method + " " + url + "'", 
-        client: ip.address() 
-    }
-
-    // TODO: all of this is removable!
-    if (method === 'GET' && service === Services.USERS_SERVICE){
-
-        // TODO: handle errors and log them
-        Logger.log(requestData, 'Received some request to users service', Services.USERS_SERVICE);
-
+        // TODO: forward the request to the respective service
         return res.end(JSON.stringify({
-            service: 'Users service'
+            service: `${service} service`
         }))
+    } catch (err) {
+        if (err instanceof InvalidRequestException) console.log("Invalid request.");
+        else console.log("Some error occured.")
     }
 
-    if (method === 'GET' && service === Services.PRODUCTS_SERVICE){
-        return res.end(JSON.stringify({
-            service: 'Products service'
-        }))
-    }
-
-    if (method === 'GET' && service === Services.ORDERS_SERVICE){
-        return res.end(JSON.stringify({
-            service: 'Orders service'
-        }))
-    }
-
-    if (method === 'GET' && service === Services.INVOICES_SERVICE){
-        return res.end(JSON.stringify({
-            service: 'Invoices service'
-        }))
-    }
+    // TODO: handle errors and log them
+    // TODO: should be logged once the service answers 
+    // Logger.log(requestData, 'Request', Services.USERS_SERVICE);
 
     res.writeHead(200, {'Content-Type': 'application/json'})
-
     res.end(JSON.stringify({
         data: 'Bomboklat abc'
     }))

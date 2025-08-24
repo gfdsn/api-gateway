@@ -1,27 +1,29 @@
 import fs from "fs";
-import { Services } from "../types/endpoints.js";
-import { LogLevels, LogRequest } from "./log.types.js";
 import path from "path";
+import ip from 'ip';
+import { Services } from "../endpoints.js";
+import { LogLevels, LogRequest } from "./log.types.js";
 
 // TODO: limit the request.log length
 // TODO: search for some log
 // TODO: update the user's id when possible
 
+const DEBUG: boolean = Boolean(process.env.DEBUG)
+
 export class Logger {
     
     public static log = async (request: LogRequest, message: string, service: Services): Promise<void> => {
         const file_path: string = await this.verifyFile("logs");
-        console.log(file_path)
 
         const log_message: string = this.buildLogMessage(request, service, LogLevels.INFO, message);
     
         fs.appendFileSync(file_path, log_message, { encoding: 'utf8' });
     }
 
-    public static error = async (request: LogRequest, message: string, service: Services): Promise<void> => {
+    public static error = async (message: string, service?: Services): Promise<void> => {
         const file_path: string = await this.verifyFile("errors");
 
-        const log_message: string = this.buildLogMessage(request, service, LogLevels.ERROR, message);
+        const log_message: string = this.buildErrorMessage(message, service ?? undefined)
 
         fs.appendFile(file_path, log_message, {encoding: 'latin1'},
             (err) => {if (err) console.log(err)}
@@ -46,8 +48,23 @@ export class Logger {
     */
     private static buildLogMessage = (request: LogRequest, service: Services, level: LogLevels, message: string ): string => {
         const timestamp: string = this.buildTimeStamp();
+        const ipAddr: string = ip.address();
 
-        return `${request.client} - ${request.user_id} [${service} service][${timestamp}] ${LogLevels.INFO} ${request.target} ${request.status} ${message} ${request.agent}\n`
+        return `${ipAddr} - [${service}][${timestamp}] ${LogLevels.INFO} ${request.target} ${message} ${request.agent}\n`
+    }
+
+    /**
+     * Builds and returns the error message string.
+     * 
+     * @param string message
+     * @param Services service
+     * 
+     * @returns string
+    */
+    private static buildErrorMessage = (message: string, service?: Services): string => {
+        const timestamp: string = this.buildTimeStamp();
+
+        return `[${service??"base"}][${timestamp}] ${LogLevels.ERROR} - ${message}\n`;
     }
 
     /**
